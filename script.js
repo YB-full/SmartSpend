@@ -13,7 +13,7 @@ if (transactionForm) {
     transactionForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         // we check if all the field are here, else we return
-        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton)
+        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton || !txIDInput)
             return;
         let descriptionValue = txDescriptionInput.value;
         let amountValue = parseFloat(txAmountInput.value);
@@ -25,15 +25,22 @@ if (transactionForm) {
                 selectedType = radio.value;
             }
         });
+        const existingId = txIDInput.value;
         const objectTransaction = {
-            id: "tx_" + Date.now(),
+            id: existingId ? existingId : "tx_" + Date.now(),
             type: selectedType,
             description: descriptionValue,
             amount: amountValue,
             category: categoryValue,
             date: dateValue
         };
-        transactions.push(objectTransaction);
+        if (existingId) {
+            transactions = transactions.map(tx => tx.id === existingId ? objectTransaction : tx);
+            addButton.innerText = "Register";
+        }
+        else {
+            transactions.push(objectTransaction);
+        }
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
     });
@@ -79,4 +86,31 @@ function updateUI() {
         listContainer.appendChild(rowTr);
     });
 }
-
+function editTransaction(id) {
+    return (e) => {
+        e.preventDefault();
+        const transactionToEdit = transactions.find(tx => tx.id === id);
+        if (!transactionToEdit)
+            return;
+        if (!txIDInput || !txDescriptionInput || !txAmountInput || !txCategoryInput || !txDateInput || !addButton)
+            return;
+        txDescriptionInput.value = transactionToEdit.description;
+        txAmountInput.value = transactionToEdit.amount.toString();
+        txCategoryInput.value = transactionToEdit.category;
+        txDateInput.value = transactionToEdit.date;
+        txIDInput.value = transactionToEdit.id;
+        txTypeInputs.forEach(radio => {
+            radio.checked = (radio.value === transactionToEdit.type);
+        });
+        addButton.innerText = "✏️ Update Transaction";
+        txDescriptionInput.focus();
+    };
+}
+function deleteTransaction(id) {
+    return (e) => {
+        e.preventDefault();
+        transactions = transactions.filter(tx => tx.id !== id);
+        localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
+        updateUI();
+    };
+}

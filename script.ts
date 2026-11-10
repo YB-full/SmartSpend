@@ -3,7 +3,6 @@
 //types
 type TransactionCategory='Food' | 'Rent' | 'Utilities' | 'Entertainment';
 type TransactionType='income' | 'expense'
-
 //interface
 interface Transaction {
     id: string;
@@ -34,7 +33,7 @@ if (transactionForm) {
     transactionForm.addEventListener('submit', async (e: Event) => {
         e.preventDefault();
         // we check if all the field are here, else we return
-        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton) return;
+        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton || !txIDInput) return;
         let descriptionValue=txDescriptionInput.value;
         let amountValue=parseFloat(txAmountInput.value);
         let dateValue=txDateInput.value;
@@ -46,16 +45,23 @@ if (transactionForm) {
             selectedType = radio.value as TransactionType; 
         }
         });
-
+        const existingId = txIDInput.value;
         const objectTransaction:Transaction ={
-            id: "tx_" + Date.now(),
+            id: existingId ? existingId :"tx_" + Date.now(),
             type: selectedType,
             description: descriptionValue,
             amount: amountValue,
             category:categoryValue,
             date:dateValue
         }
-        transactions.push(objectTransaction);
+        if (existingId) {
+            
+            transactions = transactions.map(tx => tx.id === existingId ? objectTransaction : tx);
+            addButton.innerText = "Register";
+        } else {
+            transactions.push(objectTransaction);
+        }
+
 
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
 
@@ -119,4 +125,44 @@ function updateUI():void{
 
     });
 }
+
+function editTransaction(id: string): (e: Event) => void {
+    return (e: Event) => {
+        e.preventDefault();
+        const transactionToEdit = transactions.find(tx => tx.id === id);
+        if (!transactionToEdit) return; 
+
+        if (!txIDInput || !txDescriptionInput || !txAmountInput || !txCategoryInput || !txDateInput || !addButton) return;
+
+        
+        txDescriptionInput.value = transactionToEdit.description;
+        txAmountInput.value = transactionToEdit.amount.toString(); 
+        txCategoryInput.value = transactionToEdit.category;
+        txDateInput.value = transactionToEdit.date;
+
+        
+        txIDInput.value = transactionToEdit.id;
+
+    
+        txTypeInputs.forEach(radio => {
+            radio.checked = (radio.value === transactionToEdit.type);
+        });
+
+        
+        addButton.innerText = "✏️ Update Transaction";
+        
+        
+        txDescriptionInput.focus();
+    }
+}
+
+
+function deleteTransaction(id: string): (e: Event) => void {
+    return (e: Event) => {
+        e.preventDefault();
+        transactions = transactions.filter(tx => tx.id !== id);
+        localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
+        updateUI();
+    }
+}    
 
