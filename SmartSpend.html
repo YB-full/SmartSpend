@@ -4,9 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" >
+    <link rel="stylesheet" href="style.css" >
+   
+    <!--<a href="https://www.exchangerate-api.com">Rates By Exchange Rate API</a>-->
+    
+    
+
 </head>
 <body>
+    <header>
+        <h1>SmartSpend.</h1>
+        <div class="team-badge">Yehoudit Bellahsen — Hackathon 2026</div>
+    </header>
+    <div class="utilities-bar">
+        <button class="btn-faker" id="faker-trigger">✨ Create tetsting data (Faker.js)</button>
+    </div>
+
+    <section id="balance-card">
+        <h2>Total Net Balance</h2>
+        <div id="total-net-balance">0.00 €</div>
+            
+        <div class="flows-container">
+            <div class="flow-item income">
+                <span>↗ Incomes</span>
+                <p id="total-income">0.00 €</p>
+            </div>
+            <div class="flow-item expense">
+                <span>↘ Expenses</span>
+                <p id="total-expenses">0.00 €</p>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-layout">
+        <section class="app-card">
+            <h3 id="form-title">Add a transaction</h3>
+                <form id="transaction-form">
+                    <input type="hidden" id="tx-id">
+                    <!-- To select a type : Income Or Expense -->
+                    <div class="radio-tile-group">
+                        <label>
+                            <input type="radio" name="tx-type" value="income" checked>
+                            <span> Income</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="tx-type" value="expense">
+                            <span> Expense</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tx-merchant">Merchant / Description</label>
+                        <input type="text" id="tx-merchant" class="form-control" required placeholder="Ex: Starbucks, Salary...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tx-amount">Amount & Currency</label>
+                        <div>
+                            <input type="number" id="tx-amount" class="form-control"  placeholder="0.00" >
+                            <select id="tx-currency" class="form-control" >
+                                <option value="EUR">EUR (€)</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="ILS">ILS (₪)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tx-category">Category</label>
+                        <select id="tx-category" class="form-control">
+                            <option value="Food">Food</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Entertainment">Entertainment</option>
+                        </select>
+                        <div class="form-group">
+                            <label for="tx-date">Date</label>
+                            <input type="date" id="tx-date" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn-submit" id="btn-submit-form">Register</button>
+                    </div>   
+                </form>
+                <section class="app-card">
+                    <h3>Activities in real time</h3>
+                    <div class="transaction-list" id="transaction-list-container">
+                    <!--here will be listed the transactions we add-->
+                    </div>
+                </section>
+        </section> 
+    </main>            
+                
     
+    <script src="script.js" ></script>
 </body>
 </html>
