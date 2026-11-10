@@ -16,8 +16,9 @@
         <h1>SmartSpend.</h1>
         <div class="team-badge">Yehoudit Bellahsen — Hackathon 2026</div>
     </header>
+    <span class="simulator-label" >Simulator :</span>
     <div class="utilities-bar">
-        <button class="btn-faker" id="faker-trigger">✨ Create tetsting data (Faker.js)</button>
+        <button class="btn-faker" id="faker-trigger" >✨ Create testing data (Faker.js)</button>
     </div>
 
     <section id="balance-card">
@@ -44,7 +45,7 @@
                     <!-- To select a type : Income Or Expense -->
                     <div class="radio-tile-group">
                         <label>
-                            <input type="radio" name="tx-type" value="income" checked>
+                            <input type="radio" id=" tx-type" name="tx-type" value="income" checked>
                             <span> Income</span>
                         </label>
                         <label>
@@ -54,8 +55,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="tx-merchant">Merchant / Description</label>
-                        <input type="text" id="tx-merchant" class="form-control" required placeholder="Ex: Starbucks, Salary...">
+                        <label for="tx-description">Description</label>
+                        <input type="text" id="tx-description" class="form-control" required placeholder="Ex: Starbucks, Salary...">
                     </div>
 
                     <div class="form-group">
@@ -86,12 +87,23 @@
                     </div>   
                 </form>
                 <section class="app-card">
-                    <h3>Activities in real time</h3>
-                    <div class="transaction-list" id="transaction-list-container">
-                    <!--here will be listed the transactions we add-->
-                    </div>
+                    <h3>Transactions History</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr >
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <!-- here will be listed the transactions we add -->
+                        <tbody id="transaction-list-container"></tbody>
+                    </table>
                 </section>
         </section> 
+        
     </main>            
                 
     

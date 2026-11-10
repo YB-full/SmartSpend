@@ -4,5 +4,8 @@
     "moduleResolution": "Node16", 
     "esModuleInterop": true,         
     "strict": true
-  }
+  },
+   "exclude": [
+    "*.js" 
+  ]
 }
