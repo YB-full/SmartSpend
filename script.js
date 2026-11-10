@@ -1,4 +1,7 @@
 "use strict";
+// import { Chart, DoughnutController, ArcElement, Legend, Tooltip, Title } from 'chart.js';
+// Chart.register(DoughnutController, ArcElement, Legend, Tooltip, Title);
+// const canvas = document.querySelector("#myCircularChart") as HTMLCanvasElement | null;
 let transactions = [];
 const transactionForm = document.querySelector("#transaction-form");
 const addButton = document.querySelector("#btn-submit-form");
@@ -8,7 +11,34 @@ const txAmountInput = document.getElementById('tx-amount');
 const txCurrencyInput = document.getElementById('tx-currency');
 const txCategoryInput = document.getElementById('tx-category');
 const txDateInput = document.getElementById('tx-date');
-const txTypeInputs = document.querySelectorAll("#tx-type");
+const txTypeInputs = document.querySelectorAll("input[name='tx-type']");
+const BASE_API_URL = "https://open.er-api.com/v6/latest/ILS";
+async function convertToShekel(amount, fromCurrency) {
+    //if the currency is already ILS
+    if (fromCurrency === 'ILS')
+        return amount;
+    try {
+        const response = await fetch(BASE_API_URL);
+        // respond invalid from server
+        if (!response.ok)
+            throw new Error(`API HTTP Error: ${response.status}`);
+        //Extraction of JSON data
+        const data = await response.json();
+        //Extract the rate of currency compare to ILS 
+        const rate = data.rates[fromCurrency];
+        if (!rate)
+            throw new Error(`Currency ${fromCurrency} not supported by API`);
+        const convertedAmount = amount / rate;
+        return parseFloat(convertedAmount.toFixed(2));
+    }
+    catch (error) {
+        console.error("Fetch API rate failed ,fallback activated:", error);
+        //using approximatives rates 
+        const offlineRates = { 'USD': 3.16, 'EUR': 3.54 };
+        const fallbackRate = offlineRates[fromCurrency] || 1;
+        return parseFloat((amount / fallbackRate).toFixed(2));
+    }
+}
 if (transactionForm) {
     transactionForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -25,24 +55,30 @@ if (transactionForm) {
                 selectedType = radio.value;
             }
         });
+        const currencyValue = txCurrencyInput.value;
+        const finalAmountInShekel = await convertToShekel(amountValue, currencyValue);
         const existingId = txIDInput.value;
         const objectTransaction = {
             id: existingId ? existingId : "tx_" + Date.now(),
             type: selectedType,
             description: descriptionValue,
-            amount: amountValue,
+            amount: finalAmountInShekel,
             category: categoryValue,
             date: dateValue
         };
         if (existingId) {
             transactions = transactions.map(tx => tx.id === existingId ? objectTransaction : tx);
-            addButton.innerText = "Register";
+            addButton.innerText = "Add Transaction";
         }
         else {
             transactions.push(objectTransaction);
         }
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
+        transactionForm.reset();
+        txDateInput.value = new Date().toISOString().split('T')[0];
+        if (!existingId)
+            addButton.innerText = "Add Transaction";
     });
 }
 function updateUI() {
@@ -50,7 +86,20 @@ function updateUI() {
     if (!listContainer)
         return;
     listContainer.innerHTML = "";
+    let totalNet = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
     transactions.forEach(tx => {
+        //calculating the balance
+        if (tx.type === 'income') {
+            totalIncome += tx.amount;
+            totalNet += tx.amount;
+        }
+        else {
+            totalExpense += tx.amount;
+            totalNet -= tx.amount;
+        }
+        //creating the element for the transactions historic
         const rowTr = document.createElement("tr");
         rowTr.className = 'transaction-item';
         const dateTd = document.createElement("td");
@@ -85,6 +134,15 @@ function updateUI() {
         rowTr.appendChild(actionsTd);
         listContainer.appendChild(rowTr);
     });
+    const netDisplay = document.querySelector("#total-net-balance");
+    const incomeDisplay = document.querySelector("#total-income");
+    const expenseDisplay = document.querySelector("#total-expenses");
+    if (netDisplay)
+        netDisplay.innerText = `${totalNet.toFixed(2)} ₪`;
+    if (incomeDisplay)
+        incomeDisplay.innerText = `${totalIncome.toFixed(2)} ₪`;
+    if (expenseDisplay)
+        expenseDisplay.innerText = `${totalExpense.toFixed(2)} ₪`;
 }
 function editTransaction(id) {
     return (e) => {

@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css" >
-   
-    <!--<a href="https://www.exchangerate-api.com">Rates By Exchange Rate API</a>-->
-    
-    
-
 </head>
 <body>
     <header>
@@ -23,16 +18,16 @@
 
     <section id="balance-card">
         <h2>Total Net Balance</h2>
-        <div id="total-net-balance">0.00 €</div>
+        <div id="total-net-balance">0.00</div>
             
         <div class="flows-container">
             <div class="flow-item income">
                 <span>↗ Incomes</span>
-                <p id="total-income">0.00 €</p>
+                <p id="total-income">0.00 </p>
             </div>
             <div class="flow-item expense">
                 <span>↘ Expenses</span>
-                <p id="total-expenses">0.00 €</p>
+                <p id="total-expenses">0.00 </p>
             </div>
         </div>
     </section>
@@ -103,7 +98,12 @@
                     </table>
                 </section>
         </section> 
-        
+        <section class="chart-card">
+            <h3 id="form-title"> Chart Diagram by Category</h3>
+            <div class="chart-container">
+                <canvas id="myCircularChart"></canvas>
+            </div>
+        </section>
     </main>            
                 
     
