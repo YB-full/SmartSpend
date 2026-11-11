@@ -1,7 +1,3 @@
-// import { Chart, DoughnutController, ArcElement, Legend, Tooltip, Title } from 'chart.js';
-// Chart.register(DoughnutController, ArcElement, Legend, Tooltip, Title);
-// const canvas = document.querySelector("#myCircularChart") as HTMLCanvasElement | null;
-
 
 //types
 type TransactionCategory='Food' | 'Rent' | 'Utilities' | 'Entertainment';
@@ -69,7 +65,7 @@ if (transactionForm) {
     transactionForm.addEventListener('submit', async (e: Event) => {
         e.preventDefault();
         // we check if all the field are here, else we return
-        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton || !txIDInput) return;
+        if (!txDescriptionInput || !txAmountInput || !txCurrencyInput || !txCategoryInput || !txDateInput || !addButton || !txIDInput ) return;
         let descriptionValue=txDescriptionInput.value;
         let amountValue=parseFloat(txAmountInput.value);
         let dateValue=txDateInput.value;
@@ -108,10 +104,13 @@ if (transactionForm) {
         updateUI();
 
         transactionForm.reset();
+        txIDInput.value = "";
         txDateInput.value = new Date().toISOString().split('T')[0];
-        if (!existingId) addButton.innerText = "Add Transaction";
+        if (!existingId){ addButton.innerText = "Add Transaction";}
+        updateChart();
     
     })
+    
 }
 function updateUI():void{
     const listContainer = document.querySelector("#transaction-list-container");
@@ -229,3 +228,53 @@ function deleteTransaction(id: string): (e: Event) => void {
     }
 }    
 
+declare var Chart: any
+const canvas = document.querySelector("#myCircularChart") as HTMLCanvasElement | null;
+let myChartInstance: any = null;
+
+const CHART_COLORS = ['#ff7675', '#74b9ff', '#ffeaa7', '#a29bfe'];
+
+function updateChart():void{
+
+    let myCategories:Record<TransactionCategory,number>={
+        Food: 0,
+        Rent: 0,
+        Utilities: 0,
+        Entertainment: 0
+    }
+    
+    transactions.forEach(tx=>{
+        if(tx.type === 'expense'){
+            myCategories[tx.category]+=tx.amount;
+        }
+    });
+
+     if (!canvas) return;
+    if (myChartInstance) {
+        myChartInstance.destroy();
+    }
+
+    //creating the chart using the data provided
+    myChartInstance = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Food', 'Rent', 'Utilities', 'Entertainment'],
+            datasets: [{
+                data: [
+                    //here chart will calculate the pourcent for us 
+                    myCategories.Food, 
+                    myCategories.Rent, 
+                    myCategories.Utilities, 
+                    myCategories.Entertainment
+                ],
+                backgroundColor:CHART_COLORS,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false
+        }
+    });
+
+
+}

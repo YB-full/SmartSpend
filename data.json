@@ -7,5 +7,6 @@
   },
    "exclude": [
     "*.js" 
-  ]
+  ],
+  "module": "none"
 }

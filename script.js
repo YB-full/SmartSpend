@@ -1,7 +1,4 @@
 "use strict";
-// import { Chart, DoughnutController, ArcElement, Legend, Tooltip, Title } from 'chart.js';
-// Chart.register(DoughnutController, ArcElement, Legend, Tooltip, Title);
-// const canvas = document.querySelector("#myCircularChart") as HTMLCanvasElement | null;
 let transactions = [];
 const transactionForm = document.querySelector("#transaction-form");
 const addButton = document.querySelector("#btn-submit-form");
@@ -76,9 +73,12 @@ if (transactionForm) {
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
         transactionForm.reset();
+        txIDInput.value = "";
         txDateInput.value = new Date().toISOString().split('T')[0];
-        if (!existingId)
+        if (!existingId) {
             addButton.innerText = "Add Transaction";
+        }
+        updateChart();
     });
 }
 function updateUI() {
@@ -171,4 +171,46 @@ function deleteTransaction(id) {
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
     };
+}
+const canvas = document.querySelector("#myCircularChart");
+let myChartInstance = null;
+const CHART_COLORS = ['#ff7675', '#74b9ff', '#ffeaa7', '#a29bfe'];
+function updateChart() {
+    let myCategories = {
+        Food: 0,
+        Rent: 0,
+        Utilities: 0,
+        Entertainment: 0
+    };
+    transactions.forEach(tx => {
+        if (tx.type === 'expense') {
+            myCategories[tx.category] += tx.amount;
+        }
+    });
+    if (!canvas)
+        return;
+    if (myChartInstance) {
+        myChartInstance.destroy();
+    }
+    //creating the chart using the data provided
+    myChartInstance = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Food', 'Rent', 'Utilities', 'Entertainment'],
+            datasets: [{
+                    data: [
+                        //here chart will calculate the pourcent for us 
+                        myCategories.Food,
+                        myCategories.Rent,
+                        myCategories.Utilities,
+                        myCategories.Entertainment
+                    ],
+                    backgroundColor: CHART_COLORS,
+                    borderWidth: 0
+                }]
+        },
+        options: {
+            maintainAspectRatio: false
+        }
+    });
 }
