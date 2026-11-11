@@ -1,0 +1,9 @@
+.amount-income {
+  color: green;
+  font-weight: 700;
+}
+
+.amount-expense {
+  color:red;
+  font-weight: 700;
+}

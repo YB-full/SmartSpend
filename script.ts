@@ -108,6 +108,7 @@ if (transactionForm) {
         txDateInput.value = new Date().toISOString().split('T')[0];
         if (!existingId){ addButton.innerText = "Add Transaction";}
         updateChart();
+        updateBalance();
     
     })
     
@@ -115,22 +116,8 @@ if (transactionForm) {
 function updateUI():void{
     const listContainer = document.querySelector("#transaction-list-container");
     if (!listContainer) return;
-    listContainer.innerHTML = "";
-    let totalNet=0;
-    let totalIncome=0;
-    let totalExpense=0;
-
-    
-      
+    listContainer.innerHTML = "";      
     transactions.forEach(tx => { 
-        //calculating the balance
-        if (tx.type === 'income') {
-            totalIncome += tx.amount;
-            totalNet += tx.amount;
-        } else {
-            totalExpense += tx.amount;
-            totalNet -= tx.amount;
-        }
         //creating the element for the transactions historic
         const rowTr = document.createElement("tr");
         rowTr.className = 'transaction-item'; 
@@ -145,7 +132,15 @@ function updateUI():void{
 
         const amountTd=document.createElement("td");
         amountTd.className="tx-amount";
-        amountTd.innerText= `${tx.amount.toFixed(2)}₪`;
+        //we add a sign either it's an income(+) or an expense(-)
+        if (tx.type === "income") {
+            amountTd.innerText = `+ ${tx.amount.toFixed(2)} ₪`;
+            amountTd.classList.add("amount-income");
+            
+        } else {
+            amountTd.innerText = `- ${tx.amount.toFixed(2)} ₪`;
+            amountTd.classList.add("amount-expense");
+        }
 
         const categoryTd=document.createElement("td");
         categoryTd.className="tx-category";
@@ -179,6 +174,24 @@ function updateUI():void{
 
         listContainer.appendChild(rowTr);
 
+    });
+   
+    
+}
+
+function updateBalance():void{
+    let totalNet=0;
+    let totalIncome=0;
+    let totalExpense=0;
+    //calculating the balance
+     transactions.forEach(tx => {
+        if (tx.type === 'income') {
+            totalIncome += tx.amount;
+            totalNet += tx.amount;
+        } else {
+            totalExpense += tx.amount;
+            totalNet -= tx.amount;
+        }
     });
     const netDisplay=document.querySelector("#total-net-balance") as HTMLElement;
     const incomeDisplay=document.querySelector("#total-income") as HTMLElement;
@@ -225,6 +238,8 @@ function deleteTransaction(id: string): (e: Event) => void {
         transactions = transactions.filter(tx => tx.id !== id);
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
+        updateBalance();
+        updateChart();
     }
 }    
 
@@ -277,4 +292,47 @@ function updateChart():void{
     });
 
 
+}
+
+declare var faker: any;
+const fakerButton = document.querySelector("#faker-trigger") as HTMLButtonElement | null;
+
+function generateFakeTransactions(): void {
+  if (typeof faker === 'undefined') {
+    alert("Faker is not charged !");
+    return;
+  }
+
+  const categories: TransactionCategory[] = ['Food', 'Rent', 'Utilities', 'Entertainment'];
+
+  for (let i = 0; i < 10; i++) {
+    const randomType: 'income' | 'expense' = Math.random() > 0.7 ? 'income' : 'expense';
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+
+    const fakeDescription = randomType === 'income'
+      ? faker.company.name() + " Salary"
+      : faker.commerce.productName();
+
+    const fakeAmount = Number(faker.finance.amount({ min: 20, max: 500, dec: 2 }));
+    const fakeDate = faker.date.recent({ days: 30 }).toISOString().split('T');
+
+    const fakeTx: Transaction = {
+      id: "tx_" + Date.now() + "_" + i,
+      type: randomType,
+      description: fakeDescription,
+      amount: fakeAmount,
+      category: randomCategory,
+      date: fakeDate
+    };
+
+    transactions.push(fakeTx);
+  }
+
+  updateUI(); 
+  updateBalance();        
+  updateChart();
+}
+
+if (fakerButton) {
+  fakerButton.addEventListener('click', generateFakeTransactions);
 }

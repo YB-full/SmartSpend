@@ -79,6 +79,7 @@ if (transactionForm) {
             addButton.innerText = "Add Transaction";
         }
         updateChart();
+        updateBalance();
     });
 }
 function updateUI() {
@@ -86,19 +87,7 @@ function updateUI() {
     if (!listContainer)
         return;
     listContainer.innerHTML = "";
-    let totalNet = 0;
-    let totalIncome = 0;
-    let totalExpense = 0;
     transactions.forEach(tx => {
-        //calculating the balance
-        if (tx.type === 'income') {
-            totalIncome += tx.amount;
-            totalNet += tx.amount;
-        }
-        else {
-            totalExpense += tx.amount;
-            totalNet -= tx.amount;
-        }
         //creating the element for the transactions historic
         const rowTr = document.createElement("tr");
         rowTr.className = 'transaction-item';
@@ -110,7 +99,15 @@ function updateUI() {
         descriptionTd.innerText = tx.description;
         const amountTd = document.createElement("td");
         amountTd.className = "tx-amount";
-        amountTd.innerText = `${tx.amount.toFixed(2)}₪`;
+        //we add a sign either it's an income(+) or an expense(-)
+        if (tx.type === "income") {
+            amountTd.innerText = `+ ${tx.amount.toFixed(2)} ₪`;
+            amountTd.classList.add("amount-income");
+        }
+        else {
+            amountTd.innerText = `- ${tx.amount.toFixed(2)} ₪`;
+            amountTd.classList.add("amount-expense");
+        }
         const categoryTd = document.createElement("td");
         categoryTd.className = "tx-category";
         categoryTd.innerText = tx.category;
@@ -133,6 +130,22 @@ function updateUI() {
         rowTr.appendChild(amountTd);
         rowTr.appendChild(actionsTd);
         listContainer.appendChild(rowTr);
+    });
+}
+function updateBalance() {
+    let totalNet = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
+    //calculating the balance
+    transactions.forEach(tx => {
+        if (tx.type === 'income') {
+            totalIncome += tx.amount;
+            totalNet += tx.amount;
+        }
+        else {
+            totalExpense += tx.amount;
+            totalNet -= tx.amount;
+        }
     });
     const netDisplay = document.querySelector("#total-net-balance");
     const incomeDisplay = document.querySelector("#total-income");
@@ -170,6 +183,8 @@ function deleteTransaction(id) {
         transactions = transactions.filter(tx => tx.id !== id);
         localStorage.setItem("smartspend_transactions", JSON.stringify(transactions));
         updateUI();
+        updateBalance();
+        updateChart();
     };
 }
 const canvas = document.querySelector("#myCircularChart");
@@ -213,4 +228,36 @@ function updateChart() {
             maintainAspectRatio: false
         }
     });
+}
+const fakerButton = document.querySelector("#faker-trigger");
+function generateFakeTransactions() {
+    if (typeof faker === 'undefined') {
+        alert("Faker is not charged !");
+        return;
+    }
+    const categories = ['Food', 'Rent', 'Utilities', 'Entertainment'];
+    for (let i = 0; i < 10; i++) {
+        const randomType = Math.random() > 0.7 ? 'income' : 'expense';
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        const fakeDescription = randomType === 'income'
+            ? faker.company.name() + " Salary"
+            : faker.commerce.productName();
+        const fakeAmount = Number(faker.finance.amount({ min: 20, max: 500, dec: 2 }));
+        const fakeDate = faker.date.recent({ days: 30 }).toISOString().split('T');
+        const fakeTx = {
+            id: "tx_" + Date.now() + "_" + i,
+            type: randomType,
+            description: fakeDescription,
+            amount: fakeAmount,
+            category: randomCategory,
+            date: fakeDate
+        };
+        transactions.push(fakeTx);
+    }
+    updateUI();
+    updateBalance();
+    updateChart();
+}
+if (fakerButton) {
+    fakerButton.addEventListener('click', generateFakeTransactions);
 }

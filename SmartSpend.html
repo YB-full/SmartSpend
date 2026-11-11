@@ -57,7 +57,7 @@
                     <div class="form-group">
                         <label for="tx-amount">Amount & Currency</label>
                         <div>
-                            <input type="number" id="tx-amount" class="form-control"  placeholder="0.00" >
+                            <input type="number" id="tx-amount" class="form-control" step="0.1" min="0" placeholder="0.00" >
                             <select id="tx-currency" class="form-control" >
                                 <option value="EUR">EUR (€)</option>
                                 <option value="USD">USD ($)</option>
@@ -107,6 +107,10 @@
     </main>            
                 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+      import { faker } from "https://esm.sh/@faker-js/faker";
+      window.faker = faker;
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
